@@ -91,7 +91,7 @@ res <- rma(ai=as.numeric(as.vector(data$RIC_events)), bi=as.numeric(as.vector(da
            slab=as.character(trial_names),
            measure="RR", method="REML");
 
-png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/forest_primary_effects_all.png",width=700,height=500)
+png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/forest_primary_effects_all.png",width=700,height=500,res=100)
 
 par(font=2, cex=0.75)
 forest(res,annotate=T, addfit=T,addcred=T, 
