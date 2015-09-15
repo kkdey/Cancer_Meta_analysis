@@ -1,0 +1,175 @@
+---
+title: "Primary_effects_ALL"
+author: "Kushal K Dey"
+date: "July 27, 2015"
+output: html_document
+---
+
+```{r,echo=FALSE,eval=TRUE}
+
+
+########################   R packages   #################################
+
+suppressMessages(suppressWarnings(library(rmeta)))
+suppressMessages(suppressWarnings(library(meta)))
+suppressMessages(suppressWarnings(library(metafor)))
+suppressMessages(suppressWarnings(library(plyr)))
+suppressMessages(suppressWarnings(library(dplyr)))
+
+
+
+```
+
+
+The forest plot for the primary effects is as follows : 
+
+```{r, echo=FALSE,eval=TRUE}
+
+##################################### Primary factor comparison ##############################################
+
+#######################################   Loading the Data  (OS) #######################################
+
+trials_1=c("Marks 2010","Mohty 2010","Eom 2013","Tanaka 2013");
+
+RIC_events_1=c(35,61,33,109)
+RIC_total_1=c(93,127,60,206)
+RIC_non_events_1=RIC_total_1-RIC_events_1;
+MAC_events_1=c(614,202,68,188);
+MAC_total_1=c(1428,449,120,369);
+MAC_non_events_1=MAC_total_1-MAC_events_1;
+weight_1=c(0.218,0.259,0.132,0.391);
+
+data1 <- data.frame(cbind(trials_1,RIC_events_1,RIC_total_1,MAC_events_1,MAC_total_1),stringsAsFactors=FALSE);
+
+res <- rma(ai=as.numeric(data1$RIC_events_1), bi=as.numeric(data1$RIC_total_1), ci=as.numeric(data1$MAC_events_1), di=as.numeric(data1$MAC_total_1),data=data1,
+           measure="RR", method="REML");
+
+#########################################  Loading the Data (DFS)  #########################################
+
+trials_2=c("Marks 2010","Mohty 2010","Eom 2013","Tanaka 2013");
+
+RIC_events_2=c(29,41,30,80)
+RIC_total_2=c(93,127,60,206)
+RIC_non_events_2=RIC_total_2-RIC_events_2;
+MAC_events_2=c(585,171,66,173);
+MAC_total_2=c(1428,449,120,369);
+MAC_non_events_2=MAC_total_2-MAC_events_2;
+weight_2=c(0.227,0.239,0.14,0.394);
+
+#########################################  Loading the Data (RI)  #########################################
+
+trials_3=c("Marks 2010","Mohty 2010","Eom 2013","Tanaka 2013");
+
+RIC_events_3=c(33,60,21,54)
+RIC_total_3=c(93,127,60,206)
+RIC_non_events_3=RIC_total_3-RIC_events_3;
+MAC_events_3=c(371,139,32,55);
+MAC_total_3=c(1428,449,120,369);
+MAC_non_events_3=MAC_total_3-MAC_events_3;
+weight_3=c(0.271,0.366,0.127,0.235);
+
+###################################  Pooling the Primary Factor Data  #####################################
+
+RIC_events =c(RIC_events_1,RIC_events_2,RIC_events_3);
+RIC_non_events = c(RIC_non_events_1,RIC_non_events_2, RIC_non_events_3);
+MAC_events = c(MAC_events_1, MAC_events_2, MAC_events_3);
+MAC_non_events = c(MAC_non_events_1, MAC_non_events_2, MAC_non_events_3);
+weight =c(weight_1,weight_2,weight_3);
+labels = c(rep("OS",4),rep("DFS",4),c(rep("RI",4)));
+
+data = data.frame(cbind(rep(trials_1,3), RIC_events, RIC_non_events, MAC_events, MAC_non_events,weight, labels));
+#print(data)
+
+suppressMessages(attach(data))
+
+trial_names = rep(trials_1,3);
+spacings =c(rep(".",4),rep("",4),rep(" ",4));
+trial_names=paste0(rep(trials_1,3),spacings);
+
+
+res <- rma(ai=as.numeric(as.vector(data$RIC_events)), bi=as.numeric(as.vector(data$RIC_non_events)), ci=as.numeric(as.vector(data$MAC_events)), di=as.numeric(as.vector(data$MAC_non_events)),data=data,
+           slab=as.character(trial_names),
+           measure="RR", method="REML");
+
+png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/forest_primary_effects_all.png",width=700,height=500)
+
+par(font=2, cex=0.75)
+forest(res,annotate=T, addfit=T,addcred=T, 
+       showweight=F, xlim=c(-13, 4), ylim=c(-2,27),
+       at=log(c(0.25, 0.5, 0.7, 1, 1.5, 2, 4)),
+        atransf=exp,main="Primary Effects Forest Plot",
+       ilab=cbind(as.numeric(as.vector(data$RIC_events)),as.numeric(as.vector(data$RIC_non_events)),
+                  as.numeric(as.vector(data$MAC_events)),as.numeric(as.vector(data$MAC_non_events)),
+                  paste0(100*round(as.numeric(as.vector(data$weight)),digits=3))),
+       ilab.xpos=c(-10,-8,-6,-4,-2), 
+       mlab="RE model for all primary effects",
+       xlab="Risk Ratio",
+       rows=c(3:6,12:15,20:23),
+       cex=0.80);
+
+res.1 <- rma(ai=as.numeric(as.vector(data$RIC_events)), bi=as.numeric(as.vector(data$RIC_non_events)), ci=as.numeric(as.vector(data$MAC_events)), di=as.numeric(as.vector(data$MAC_non_events)),data=data,
+           measure="RR", subset = (as.character(data$labels)=="OS"), method="REML");
+
+res.2 <- rma(ai=as.numeric(as.vector(data$RIC_events)), bi=as.numeric(as.vector(data$RIC_non_events)), ci=as.numeric(as.vector(data$MAC_events)), di=as.numeric(as.vector(data$MAC_non_events)),data=data,
+           measure="RR", subset = (as.character(data$labels)=="DFS"), method="REML");
+
+res.3 <- rma(ai=as.numeric(as.vector(data$RIC_events)), bi=as.numeric(as.vector(data$RIC_non_events)), ci=as.numeric(as.vector(data$MAC_events)), di=as.numeric(as.vector(data$MAC_non_events)),data=data,
+           measure="RR", subset = (as.character(data$labels)=="RI"), method="REML");
+
+
+addpoly(res.1, row=1.5, cex=0.75, atransf=exp, mlab="RE model for OS");
+addpoly(res.2, row=10.5, cex=0.75, atransf=exp, mlab="RE model for DFS");
+addpoly(res.3, row=18.5, cex=0.75, atransf=exp, mlab="RE model for RI");
+
+
+
+op <-par(cex=0.75, font=4)
+text(-13, c(24, 16, 7), pos=4, c("Relapse Incidence", "Disease Free Survival","Overall Survival"), cex=0.8)
+
+par(font=2)
+text(c(-10,-8,-6,-4,-2), 26, c("Events","Non_events", "Events", "Non_events","Weight (%)"));
+text(c(-9,-5),27,c("RIC","MAC"))
+
+par(font=2,cex=0.5)
+text(c(-0.5,0.5),-1.5,c("RIC","MAC"))
+
+par(font=2, cex=0.5)
+text(-10.5,       -1.5, paste0("Heterogeneity:   ", "Q= ",round(res$QE,digits=2)," (p-val= ",
+round(res$QEp,digits=3),")",",     tau^2=",round(res$tau2,digits=3)),cex=1)
+text(-10,        -2, paste0("Overall Test effect:   Z= ", round(res$zval,digits=2), " (p-val= ",round(res$pval,digits=3),")"),cex=1)
+
+dev.off()
+
+
+```
+
+The funnel plot for the primary effects is as follows 
+
+```{r echo=FALSE, eval=TRUE}
+#####################  Funnel Plot : Publication Bias ###################3
+
+#par(mar=c(-2,-4,-1,-1))
+
+png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/funnel_primary_effects_all.png",width=700,height=500)
+
+par(mfrow=c(3,1),font=2,cex=0.75)
+
+funnel(res.1)
+title(paste0("Funnel plot for Publication Bias (OS)", paste0("\n\nBegg's test: ",round(as.numeric(ranktest(res.1)$tau),digits=2)," (p-val= ", round(ranktest(res.1)$pval,digits=3),")",": ", "Egger's test: ", round(as.numeric(regtest(res.1)$zval),digits=2), " (p-val= ", round(regtest(res.1)$pval,digits=3),")")),
+cex.main = 0.75, font.main= 2, col.main= "black")
+
+
+funnel(res.2)
+title(paste0("Funnel plot for Publication Bias (DFS)", paste0("\n\nBegg's test: ",round(as.numeric(ranktest(res.2)$tau),digits=2)," (p-val= ", round(ranktest(res.2)$pval,digits=3),")",": ", "Egger's test: ", round(as.numeric(regtest(res.2)$zval),digits=2), " (p-val= ", round(regtest(res.2)$pval,digits=3),")")),
+cex.main = 0.75, font.main= 2, col.main= "black")
+
+
+funnel(res.3)
+title(paste0("Funnel plot for Publication Bias (RI)", paste0("\n\nBegg's test: ",round(as.numeric(ranktest(res.3)$tau),digits=2)," (p-val= ", round(ranktest(res.3)$pval,digits=3),")",": ", "Egger's test: ", round(as.numeric(regtest(res.3)$zval),digits=2), " (p-val= ", round(regtest(res.3)$pval,digits=3),")")),
+cex.main = 0.75, font.main= 2, col.main= "black")
+
+dev.off()
+
+
+```
+
