@@ -150,7 +150,7 @@ The funnel plot for the secondary effects is as follows
 
 #par(mar=c(-2,-4,-1,-1))
 
-png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/funnel_secondary_effects_all.png",width=700,height=500)
+png(filename="/Users/kushal/Documents/Cancer_Meta_Analysis/plots/funnel_secondary_effects_all.png",width=700,height=500,res=100)
 
 par(mfrow=c(3,1),font=2,cex=0.75)
 
